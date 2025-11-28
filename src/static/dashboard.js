@@ -1,50 +1,102 @@
+
 let priceChart = null;
-let currentCompany = '';
+let selectedCompanies = [];
 let currentProduct = '';
+let companiesData = [];
+
 
 document.addEventListener('DOMContentLoaded', function() {
+
     document.getElementById('current-date').textContent = new Date().toLocaleDateString('ru-RU');
+
 
     const today = new Date();
     const yearAgo = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
-
     document.getElementById('end-date').value = today.toISOString().split('T')[0];
     document.getElementById('start-date').value = yearAgo.toISOString().split('T')[0];
 
-    loadGlobalStats();
+    loadCompanies();
     initEmptyChart();
 });
 
-async function loadGlobalStats() {
-    try {
-        const response = await fetch('/api/stats');
-        const stats = await response.json();
 
-        document.getElementById('stats-info').textContent =
-            `${stats.total_companies} компаний, ${stats.total_products} продуктов, ${stats.total_records.toLocaleString()} записей`;
-    } catch {
-        // silent error
+async function loadCompanies() {
+    console.log('=== LOAD COMPANIES ===');
+
+    try {
+        const response = await fetch('/api/companies');
+        const companies = await response.json();
+
+        console.log('Companies loaded:', companies);
+
+        companiesData = companies;
+
+
+        const select = document.getElementById('companies-select');
+        if (!select) {
+            console.error('❌ Element companies-select not found!');
+            return;
+        }
+
+
+        select.innerHTML = '';
+
+        companies.forEach((company, index) => {
+            const option = document.createElement('option');
+            option.value = company.company;
+            option.textContent = `${company.company} (${company.product_count} продуктов)`;
+            select.appendChild(option);
+        });
+
+        console.log('✅ Companies loaded successfully');
+
+    } catch (error) {
+        console.error('❌ Error loading companies:', error);
     }
 }
 
-async function onCompanyChange() {
-    const companySelect = document.getElementById('company-select');
-    const productSelect = document.getElementById('product-select');
 
-    currentCompany = companySelect.value;
+function onCompanyChange() {
+    console.log('=== ON COMPANY CHANGE ===');
 
-    if (!currentCompany) {
-        productSelect.disabled = true;
-        productSelect.innerHTML = '<option value="">-- Сначала выберите компанию --</option>';
+    const select = document.getElementById('companies-select');
+    if (!select) {
+        console.error('❌ companies-select element not found');
         return;
     }
 
+
+    selectedCompanies = Array.from(select.selectedOptions).map(option => option.value);
+
+    console.log('Selected companies:', selectedCompanies);
+
+
+    const productSelect = document.getElementById('product-select');
+    if (selectedCompanies.length === 0) {
+        productSelect.innerHTML = '<option value="">-- Select companies first --</option>';
+        productSelect.disabled = true;
+        return;
+    }
+
+    productSelect.disabled = false;
+    updateProductSelect();
+}
+
+
+async function updateProductSelect() {
+    console.log('=== UPDATE PRODUCT SELECT ===');
+
+    if (selectedCompanies.length === 0) return;
+
     try {
-        const response = await fetch(`/api/products?company=${encodeURIComponent(currentCompany)}`);
+
+        const response = await fetch(`/api/products?company=${encodeURIComponent(selectedCompanies[0])}`);
         const products = await response.json();
 
-        productSelect.disabled = false;
-        productSelect.innerHTML = '<option value="">-- Выберите продукт --</option>';
+        console.log('Products loaded:', products);
+
+        const productSelect = document.getElementById('product-select');
+        productSelect.innerHTML = '<option value="">-- Select product --</option>';
 
         products.forEach(product => {
             const option = document.createElement('option');
@@ -52,97 +104,106 @@ async function onCompanyChange() {
             option.textContent = product;
             productSelect.appendChild(option);
         });
-    } catch {
-        // silent error
+
+    } catch (error) {
+        console.error('❌ Error loading products:', error);
     }
 }
 
-function onProductChange() {
-    currentProduct = document.getElementById('product-select').value;
-}
-
+// Initialize empty chart
 function initEmptyChart() {
-    const ctx = document.getElementById('priceChart').getContext('2d');
+    const ctx = document.getElementById('priceChart');
+    if (!ctx) {
+        console.error('❌ priceChart canvas not found');
+        return;
+    }
+
+    if (priceChart) {
+        priceChart.destroy();
+    }
 
     priceChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: [],
-            datasets: [{
-                label: 'Цена',
-                data: [],
-                borderColor: 'rgb(75, 192, 192)',
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                tension: 0.1,
-                fill: true,
-                pointRadius: 4,
-                pointHoverRadius: 6
-            }]
+            datasets: []
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    display: true,
-                    position: 'top'
-                },
+                legend: { display: true, position: 'top' },
                 tooltip: {
-                    mode: 'index',
-                    intersect: false,
                     callbacks: {
                         label: function(context) {
-                            return 'Цена: ' + context.parsed.y.toLocaleString('ru-RU') + ' руб.';
+                            return context.dataset.label + ': ' +
+                                   context.parsed.y.toLocaleString('ru-RU') + ' руб.';
                         }
                     }
                 }
             },
             scales: {
-                x: {
-                    display: true,
-                    title: {
-                        display: true,
-                        text: 'Дата'
-                    }
-                },
-                y: {
-                    display: true,
-                    title: {
-                        display: true,
-                        text: 'Цена (руб.)'
-                    }
-                }
+                x: { display: true, title: { display: true, text: 'Дата' } },
+                y: { display: true, title: { display: true, text: 'Цена (руб.)' } }
             }
         }
     });
 }
 
+
+function onProductChange() {
+    currentProduct = document.getElementById('product-select').value;
+}
+
+
 async function updateChart() {
-    if (!currentCompany || !currentProduct) {
-        alert('Пожалуйста, выберите компанию и продукт');
+    console.log('=== UPDATE CHART ===');
+
+    if (selectedCompanies.length === 0 || !currentProduct) {
+        alert('Выберите компании и продукт');
         return;
     }
+
+    console.log('Companies:', selectedCompanies);
+    console.log('Product:', currentProduct);
 
     const startDate = document.getElementById('start-date').value;
     const endDate = document.getElementById('end-date').value;
 
-    const loadBtn = document.getElementById('load-btn');
-    loadBtn.disabled = true;
-    loadBtn.innerHTML = '<i class="bi bi-arrow-clockwise spin"></i> Загрузка...';
+    const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'];
 
     try {
-        const params = new URLSearchParams({
-            company: currentCompany,
-            product: currentProduct,
-            start_date: startDate,
-            end_date: endDate
-        });
+        const datasets = [];
 
-        const response = await fetch(`/api/prices?${params}`);
-        const data = await response.json();
+        for (let i = 0; i < selectedCompanies.length; i++) {
+            const company = selectedCompanies[i];
 
-        if (data.error) {
-            throw new Error(data.error);
+            const params = new URLSearchParams({
+                company: company,
+                product: currentProduct,
+                start_date: startDate,
+                end_date: endDate
+            });
+
+            const response = await fetch(`/api/prices?${params}`);
+            const data = await response.json();
+
+            console.log(`Data for ${company}:`, data);
+
+            datasets.push({
+                label: company,
+                data: data.prices,
+                borderColor: colors[i % colors.length],
+                backgroundColor: colors[i % colors.length] + '20',
+                tension: 0.1,
+                fill: false,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            });
+
+            if (i === 0) {
+                priceChart.data.labels = data.dates;
+            }
         }
 
         if (priceChart) {
@@ -150,48 +211,31 @@ async function updateChart() {
         }
 
         initEmptyChart();
-
-        priceChart.data.labels = data.dates;
-        priceChart.data.datasets[0].data = data.prices;
-        priceChart.data.datasets[0].label = `${currentProduct} (${currentCompany})`;
+        priceChart.data.datasets = datasets;
         priceChart.update();
 
-        document.getElementById('chart-subtitle').textContent =
-            `${currentProduct} | ${data.dates.length} точек`;
-
-        updateStats(data.stats);
-        document.getElementById('stats-cards').style.display = 'flex';
+        console.log('✅ Chart updated successfully');
 
     } catch (error) {
-        alert('Ошибка загрузки данных: ' + error.message);
-    } finally {
-        loadBtn.disabled = false;
-        loadBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Обновить';
+        console.error('❌ Error updating chart:', error);
     }
 }
 
-function updateStats(stats) {
-    document.getElementById('min-price').textContent = stats.min.toLocaleString('ru-RU') + ' руб.';
-    document.getElementById('max-price').textContent = stats.max.toLocaleString('ru-RU') + ' руб.';
-    document.getElementById('avg-price').textContent = Math.round(stats.avg).toLocaleString('ru-RU') + ' руб.';
-    document.getElementById('data-points').textContent = stats.count.toLocaleString('ru-RU');
-}
 
 async function exportData() {
-    if (!currentCompany || !currentProduct) {
-        alert('Выберите компанию и продукт для экспорта');
+    if (selectedCompanies.length === 0 || !currentProduct) {
+        alert('Выберите компании и продукт для экспорта');
         return;
     }
 
     const startDate = document.getElementById('start-date').value;
     const endDate = document.getElementById('end-date').value;
 
-    const params = new URLSearchParams({
-        company: currentCompany,
-        product: currentProduct,
-        start_date: startDate,
-        end_date: endDate
-    });
+    const params = new URLSearchParams();
+    params.append('product', currentProduct);
+    params.append('start_date', startDate);
+    params.append('end_date', endDate);
+    selectedCompanies.forEach(company => params.append('company', company));
 
-    window.location.href = `/api/export?${params}`;
+    window.location.href = `/api/export?${params.toString()}`;
 }

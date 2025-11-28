@@ -124,6 +124,12 @@ def export_csv():
     )
 
 
+@app.route('/api/companies')
+def api_companies():
+    companies = dashboard.get_companies()
+    return jsonify(companies)
+
+
 @app.route('/api/stats')
 def api_stats():
     total_records = len(dashboard.df)
@@ -142,7 +148,7 @@ def api_stats():
 if __name__ == '__main__':
     if not os.path.exists(app.config['CSV_FILE']):
         print(f"CSV файл не найден: {app.config['CSV_FILE']}")
-        print("Запустите pipeline сначала: python pipeline/orchestrator.py")
+        print("Запустите pipeline сначала: python main.py")
         sys.exit(1)
 
     app.run(debug=True, host='0.0.0.0', port=5000)

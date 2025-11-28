@@ -4,7 +4,7 @@ import os
 import json
 import csv
 
-# Устанавливаем рабочую директорию на директорию скрипта
+
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 sys.path.append(os.path.join(os.path.dirname(__file__), 'pipeline'))

@@ -6,9 +6,9 @@ import os
 
 
 class PriceHistoryGenerator:
-    def __init__(self, json_file: str = '../factories_data.json'):
+    def __init__(self, json_file: str = 'factories_data.json'):
         self.input_file = json_file
-        self.output_file = '../factories_with_prices.json'
+        self.output_file = 'factories_with_prices.json'
         self.data = self.load_json()
 
         self.base_prices = {

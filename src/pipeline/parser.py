@@ -53,11 +53,70 @@ class AsyncMetalParser:
                 matches = re.findall(phone_pattern, text)
                 phones.extend(matches)
 
+
+            products = []
+
+
+            meta_desc = soup.find('meta', attrs={'name': 'description'})
+            if meta_desc:
+                desc = meta_desc.get('content', '').lower()
+
+
+                patterns = {
+                    'метизы': 'Метизы',
+                    'гвозди': 'Гвозди',
+                    'болты': 'Болты',
+                    'шурупы': 'Шурупы',
+                    'саморезы': 'Саморезы',
+                    'сетк': 'Сетки металлические',
+                    'пружин': 'Пружины',
+                    'рессор': 'Рессоры',
+                    'корпус': 'Корпуса',
+                    'трактор': 'Детали тракторные',
+                    'сельхоз': 'Детали сельхозмашин',
+                    'кузнеч': 'Кузнечные изделия',
+                    'поковк': 'Поковки',
+                    'штамп': 'Штамповки',
+                    'пресс': 'Прессовые изделия',
+                    'конструкц': 'Конструкции',
+                }
+
+                for pattern, product_name in patterns.items():
+                    if pattern in desc:
+                        products.append(product_name)
+
+
+            if not products:
+                if 'метиз' in factory_name.lower():
+                    products.append('Метизы')
+                elif 'сетк' in factory_name.lower():
+                    products.append('Сетки металлические')
+                elif 'пружин' in factory_name.lower():
+                    products.append('Пружины')
+                elif 'рессор' in factory_name.lower():
+                    products.append('Рессоры')
+                elif 'корпус' in factory_name.lower():
+                    products.append('Корпуса')
+                elif 'трактор' in factory_name.lower():
+                    products.append('Детали тракторные')
+                elif 'сельмаш' in factory_name.lower():
+                    products.append('Детали сельхозмашин')
+                elif 'кузнеч' in factory_name.lower() or 'кпз' in factory_name.lower():
+                    products.append('Кузнечные изделия')
+                elif 'конструкц' in factory_name.lower():
+                    products.append('Конструкции')
+                else:
+                    products.append('Обработка металла')
+
+
+            products = list(set(products))
+
             return {
                 'url': url,
                 'name': factory_name,
                 'address': address,
                 'phones': list(set(phones)),
+                'products': products,
                 'status': 'success'
             }
         except:
@@ -89,6 +148,9 @@ class AsyncMetalParser:
             with open(self.output_file, 'w', encoding='utf-8') as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
             print(f"✅ Файл создан: {os.path.abspath(self.output_file)} ({len(data)} записей)")
+            # Выводим пример записи с продуктами для проверки
+            if data:
+                print(f"📌 Пример: {data[0]['name']} -> Продукты: {data[0].get('products', [])}")
         except Exception as e:
             print(f"❌ Ошибка сохранения: {e}")
 
@@ -106,7 +168,7 @@ async def main():
         "https://ibprom.ru/zavod-korpusov"
     ]
 
-    parser = AsyncMetalParser(max_concurrent=12, delay=0.5)
+    parser = AsyncMetalParser(max_concurrent=16, delay=0.5)
     results = await parser.parse_all(factory_urls)
     parser.save_to_json(results)
 
