@@ -3,7 +3,6 @@ import random
 from datetime import datetime, timedelta
 import sys
 import os
-from typing import List, Dict
 
 
 class PriceHistoryGenerator:
@@ -32,14 +31,11 @@ class PriceHistoryGenerator:
             with open(self.input_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             return data
-        except FileNotFoundError:
-            return []
         except:
             return []
 
     def generate_price_history(self, base_price: float, months: int = 12) -> list:
         history = []
-        current_price = base_price
         start_date = datetime.now() - timedelta(days=365)
 
         for month in range(months):
@@ -119,15 +115,14 @@ class PriceHistoryGenerator:
             factories_with_prices.append(processed_factory)
 
         try:
-            os.makedirs(os.path.dirname(self.output_file), exist_ok=True)
             with open(self.output_file, 'w', encoding='utf-8') as f:
                 json.dump(factories_with_prices, f, ensure_ascii=False, indent=2)
 
             total_products = sum(len(f.get('price_data', {})) for f in factories_with_prices)
-            print(f"Обработано {total_products} продуктов по {len(factories_with_prices)} заводам")
-
+            print(
+                f"✅ Файл создан: {self.output_file} ({len(factories_with_prices)} заводов, {total_products} продуктов)")
         except Exception as e:
-            print(f"Ошибка сохранения: {e}")
+            print(f"❌ Ошибка сохранения: {e}")
 
 
 def main():
@@ -136,5 +131,4 @@ def main():
 
 
 if __name__ == "__main__":
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
     main()

@@ -1,14 +1,12 @@
 import json
 import csv
-import sys
 import os
-from pathlib import Path
 from typing import List, Dict
 
 
 class JsonToCsvConverter:
-    def __init__(self, json_file: str = '../factories_with_prices.json',
-                 csv_file: str = '../data/metal_prices_history.csv'):
+    def __init__(self, json_file: str = 'factories_with_prices.json',
+                 csv_file: str = 'data/metal_prices_history.csv'):
         self.input_file = json_file
         self.output_file = csv_file
         self.fieldnames = ['company', 'product', 'date', 'price']
@@ -16,10 +14,7 @@ class JsonToCsvConverter:
     def load_json(self) -> List[Dict]:
         try:
             with open(self.input_file, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-            return data
-        except FileNotFoundError:
-            return []
+                return json.load(f)
         except:
             return []
 
@@ -64,7 +59,7 @@ class JsonToCsvConverter:
             return
 
         try:
-            os.makedirs(os.path.dirname(self.output_file), exist_ok=True)
+            os.makedirs(os.path.dirname(self.output_file) or 'data', exist_ok=True)
 
             with open(self.output_file, 'w', newline='', encoding='utf-8') as csvfile:
                 writer = csv.DictWriter(csvfile, fieldnames=self.fieldnames)
@@ -73,20 +68,9 @@ class JsonToCsvConverter:
                 sorted_rows = sorted(all_rows, key=lambda x: x['date'])
                 writer.writerows(sorted_rows)
 
-            print(f"CSV файл создан: {self.output_file}")
-
+            print(f"✅ CSV файл создан: {self.output_file} ({len(all_rows)} строк)")
         except Exception as e:
-            print(f"Ошибка записи: {e}")
-
-    def validate_csv(self) -> bool:
-        try:
-            with open(self.output_file, 'r', encoding='utf-8') as f:
-                reader = csv.DictReader(f)
-                row_count = sum(1 for _ in reader)
-            print(f"CSV валидация: {row_count} строк")
-            return True
-        except:
-            return False
+            print(f"❌ Ошибка записи: {e}")
 
 
 def main():
@@ -96,5 +80,4 @@ def main():
 
 
 if __name__ == "__main__":
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
     main()

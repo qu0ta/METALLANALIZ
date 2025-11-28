@@ -4,25 +4,27 @@ from bs4 import BeautifulSoup
 import json
 import sys
 import os
+import time
+import re
 from typing import List, Dict, Optional
 
 
 class AsyncMetalParser:
-    def __init__(self, max_concurrent: int = 2, delay: float = 2.0):
+    def __init__(self, max_concurrent: int = 1, delay: float = 3.0):
         self.max_concurrent = max_concurrent
         self.delay = delay
         self.semaphore = asyncio.Semaphore(max_concurrent)
         self.headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
         }
-        self.output_file = '../factories_data.json'
+        self.output_file = 'factories_data.json'
 
     async def fetch_page(self, session: aiohttp.ClientSession, url: str) -> Optional[str]:
         async with self.semaphore:
             try:
-                async with session.get(url, headers=self.headers, timeout=30, ssl=True) as response:
+                async with session.get(url, headers=self.headers, timeout=30, ssl=False) as response:
                     if response.status == 200:
                         return await response.text()
                     else:
@@ -34,7 +36,7 @@ class AsyncMetalParser:
 
     def parse_factory_page(self, html: str, url: str) -> Optional[Dict]:
         try:
-            soup = BeautifulSoup(html, 'html.parser')
+            soup = BeautifulSoup(html, 'lxml')
             title = soup.find('h1')
             factory_name = title.get_text(strip=True) if title else "Название не найдено"
 
@@ -46,16 +48,16 @@ class AsyncMetalParser:
                     break
 
             phones = []
-            for phone in soup.find_all('a', href=lambda x: x and x.startswith('tel:')):
-                phone_text = phone.get_text(strip=True)
-                if phone_text:
-                    phones.append(phone_text)
+            phone_pattern = r'\+7\s*\(\d{3,4}\)\s*\d{2,3}[\s-]*\d{2}[\s-]*\d{2,3}'
+            for text in soup.stripped_strings:
+                matches = re.findall(phone_pattern, text)
+                phones.extend(matches)
 
             return {
                 'url': url,
                 'name': factory_name,
                 'address': address,
-                'phones': phones,
+                'phones': list(set(phones)),
                 'status': 'success'
             }
         except:
@@ -83,12 +85,12 @@ class AsyncMetalParser:
 
     def save_to_json(self, data: List[Dict]):
         try:
-            os.makedirs(os.path.dirname(self.output_file), exist_ok=True)
+            os.makedirs(os.path.dirname(self.output_file) or '.', exist_ok=True)
             with open(self.output_file, 'w', encoding='utf-8') as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
-            print(f"Файл создан: {os.path.abspath(self.output_file)}")
+            print(f"✅ Файл создан: {os.path.abspath(self.output_file)} ({len(data)} записей)")
         except Exception as e:
-            print(f"Ошибка сохранения: {e}")
+            print(f"❌ Ошибка сохранения: {e}")
 
 
 async def main():
@@ -104,19 +106,13 @@ async def main():
         "https://ibprom.ru/zavod-korpusov"
     ]
 
-    parser = AsyncMetalParser(max_concurrent=2, delay=2.0)
+    parser = AsyncMetalParser(max_concurrent=12, delay=0.5)
     results = await parser.parse_all(factory_urls)
     parser.save_to_json(results)
 
-    success_count = sum(1 for r in results if r.get('status') == 'success')
-
-    print("\n" + "=" * 60)
-    print(f"Всего заводов: {len(factory_urls)}")
-    print(f"Успешно обработано: {success_count}")
-    print(f"Время выполнения: {time.time() - time.time():.2f} секунд")
-    print("=" * 60)
-
 
 if __name__ == "__main__":
+    import time
+
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
     asyncio.run(main())
