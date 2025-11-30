@@ -3,7 +3,7 @@ import asyncio
 import os
 import json
 import csv
-
+import time  
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -22,18 +22,26 @@ class PipelineOrchestrator:
         # Шаг 1: Парсинг
         print("\n[ШАГ 1] Запуск парсера...")
         try:
-            from parser import main as parser_main
+            from parser_fixed import main as parser_main  # ← ИЗМЕНИТЕ НА parser_fixed
             await parser_main()
 
             if os.path.exists('factories_data.json'):
                 with open('factories_data.json', 'r', encoding='utf-8') as f:
                     data = json.load(f)
                 print(f"✅ Парсинг завершен: {len(data)} заводов")
+                
+                # Дополнительная информация о статусах
+                success_count = sum(1 for item in data if item.get('status') == 'success')
+                failed_count = sum(1 for item in data if item.get('status') in ['error', 'failed'])
+                print(f"📊 Статистика: {success_count} успешных, {failed_count} с ошибками")
+                
             else:
                 print("❌ factories_data.json не создан")
                 return False
         except Exception as e:
             print(f"❌ Ошибка парсинга: {e}")
+            import traceback
+            traceback.print_exc()
             return False
 
         # Шаг 2: Генерация цен
@@ -47,11 +55,18 @@ class PipelineOrchestrator:
                 with open('factories_with_prices.json', 'r', encoding='utf-8') as f:
                     data = json.load(f)
                 print(f"✅ Генерация цен завершена: {len(data)} заводов")
+                
+                # Подсчет общего количества продуктов
+                total_products = sum(len(factory.get('products', [])) for factory in data)
+                print(f"📦 Всего продуктов: {total_products}")
+                
             else:
                 print("❌ factories_with_prices.json не создан")
                 return False
         except Exception as e:
             print(f"❌ Ошибка генерации цен: {e}")
+            import traceback
+            traceback.print_exc()
             return False
 
         # Шаг 3: Конвертация в CSV
@@ -63,19 +78,23 @@ class PipelineOrchestrator:
             converter.convert_to_csv(data)
 
             if os.path.exists('data/metal_prices_history.csv'):
-                with open('data/metal_prices_history.csv', 'r', encoding='utf-8') as f:
-                    reader = csv.DictReader(f)
-                    rows = list(reader)
-                print(f"✅ CSV создан: {len(rows)} ценовых точек")
+                df = pd.read_csv('data/metal_prices_history.csv')
+                print(f"✅ CSV создан: {len(df)} ценовых точек")
+                print(f"🏭 Уникальных компаний: {df['company'].nunique()}")
+                print(f"📦 Уникальных продуктов: {df['product'].nunique()}")
+                print(f"📅 Диапазон дат: {df['date'].min()} - {df['date'].max()}")
 
                 print("\nПервые 5 строк CSV:")
-                for i, row in enumerate(rows[:5], 1):
-                    print(f"{i}. {row}")
+                for i, row in df.head().iterrows():
+                    print(f"{i+1}. Компания: {row['company'][:30]}... | Продукт: {row['product']} | Дата: {row['date']} | Цена: {row['price']}")
+                    
             else:
                 print("❌ metal_prices_history.csv не создан")
                 return False
         except Exception as e:
             print(f"❌ Ошибка конвертации: {e}")
+            import traceback
+            traceback.print_exc()
             return False
 
         print("\n" + "=" * 60)
@@ -86,10 +105,21 @@ class PipelineOrchestrator:
 
 
 if __name__ == "__main__":
-    import time
-
+    import pandas as pd  # ← ДОБАВЬТЕ ДЛЯ РАБОТЫ С CSV
+    
+    # Удаляем старые файлы перед запуском
+    print("🧹 Очистка старых файлов...")
+    for file in ['factories_data.json', 'factories_with_prices.json', 'data/metal_prices_history.csv']:
+        if os.path.exists(file):
+            os.remove(file)
+            print(f"🗑️ Удален: {file}")
+    
     orchestrator = PipelineOrchestrator()
     success = asyncio.run(orchestrator.run_full_pipeline())
 
     if not success:
+        print("❌ Пайплайн завершился с ошибками")
         sys.exit(1)
+    else:
+        print("🎉 Пайплайн успешно завершен! Запускайте Flask приложение:")
+        print("python app.py")

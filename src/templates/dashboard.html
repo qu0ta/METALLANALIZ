@@ -3,132 +3,392 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мониторинг цен металлургических компаний</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Дашборд цен на металлопродукцию</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+        
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid #667eea;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        
+        .controls {
+            padding: 30px;
+            background: white;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-group label {
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        select, input, button {
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .chart-container {
+            padding: 20px;
+            background: white;
+        }
+        
+        #priceChart {
+            width: 100%;
+            height: 500px;
+            border-radius: 10px;
+            background: white;
+        }
+        
+        .data-section {
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .stat-title {
+            color: #7f8c8d;
+            font-size: 0.8em;
+            margin-top: 5px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+        
+        .error {
+            background: #ffeaa7;
+            color: #d63031;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        
+        .export-btn {
+            background: linear-gradient(135deg, #00b894, #00a085);
+            margin-left: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .filter-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
 </head>
 <body>
-<nav class="navbar navbar-dark bg-primary">
-    <div class="container-fluid">
-            <span class="navbar-brand mb-0 h1">
-                <i class="bi bi-graph-up"></i> Металлургический Price Monitor
-            </span>
-        <div class="navbar-text text-white">
-            <small id="stats-info">Загрузка статистики...</small>
-        </div>
-    </div>
-</nav>
-
-<div class="container-fluid mt-3">
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0"><i class="bi bi-funnel"></i> Фильтры</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label">Компании <span class="text-danger">*</span></label>
-                            <select multiple class="form-select" id="companies-select" size="8"
-                                    onchange="onCompanyChange()">
-                                <!-- Options will be loaded dynamically -->
-                            </select>
-                        </div>
-
-                        <div class="col-md-3">
-                            <label class="form-label">Продукт <span class="text-danger">*</span></label>
-                            <select class="form-select" id="product-select" onchange="onProductChange()" disabled>
-                                <option value="">-- Сначала выберите компанию --</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-2">
-                            <label class="form-label">Дата начала</label>
-                            <input type="date" class="form-control" id="start-date">
-                        </div>
-
-                        <div class="col-md-2">
-                            <label class="form-label">Дата окончания</label>
-                            <input type="date" class="form-control" id="end-date">
-                        </div>
-
-                        <div class="col-md-2 d-flex align-items-end">
-                            <button class="btn btn-primary w-100 me-2" onclick="updateChart()" id="load-btn">
-                                <i class="bi bi-arrow-clockwise"></i> Обновить
-                            </button>
-                            <button class="btn btn-success" onclick="exportData()" title="Экспорт CSV">
-                                <i class="bi bi-download"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row mb-4" id="stats-cards" style="display: none;">
-        <div class="col-md-3">
-            <div class="card text-white bg-success">
-                <div class="card-body">
-                    <h6 class="card-title">Минимальная цена</h6>
-                    <h3 id="min-price">-</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-white bg-danger">
-                <div class="card-body">
-                    <h6 class="card-title">Максимальная цена</h6>
-                    <h3 id="max-price">-</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-white bg-info">
-                <div class="card-body">
-                    <h6 class="card-title">Средняя цена</h6>
-                    <h3 id="avg-price">-</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-white bg-secondary">
-                <div class="card-body">
-                    <h6 class="card-title">Точек данных</h6>
-                    <h3 id="data-points">-</h3>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> График цен</h5>
-                    <small class="text-muted" id="chart-subtitle">Выберите компанию и продукт</small>
-                </div>
-                <div class="card-body">
-                    <canvas id="priceChart" height="150" style="max-height: 600px;"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<footer class="mt-5 py-3 bg-light text-center">
     <div class="container">
-        <small class="text-muted">
-            Металлургический Price Monitor |
-            <i class="bi bi-calendar3"></i> <span id="current-date"></span>
-        </small>
+        <div class="header">
+            <h1>📊 Дашборд цен на металлопродукцию</h1>
+            <div class="subtitle">Мониторинг ценовой динамики металлургических компаний</div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">{{ total_companies }}</div>
+                <div class="stat-label">Компаний</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ total_products }}</div>
+                <div class="stat-label">Видов продукции</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ total_records }}</div>
+                <div class="stat-label">Ценовых записей</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="companySelect">🏭 Компания:</label>
+                    <select id="companySelect">
+                        <option value="">Выберите компанию</option>
+                        {% for company in companies %}
+                        <option value="{{ company.company }}">{{ company.company }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="productSelect">📦 Продукция:</label>
+                    <select id="productSelect">
+                        <option value="">Сначала выберите компанию</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="startDate">📅 Начальная дата:</label>
+                    <input type="date" id="startDate">
+                </div>
+                
+                <div class="filter-group">
+                    <label for="endDate">📅 Конечная дата:</label>
+                    <input type="date" id="endDate">
+                </div>
+            </div>
+            
+            <div class="filter-row">
+                <button onclick="loadChart()">📈 Показать график</button>
+                <button class="export-btn" onclick="exportData()">📥 Экспорт в CSV</button>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <div id="priceChart">
+                <div class="loading">
+                    <h3>Выберите компанию и продукт для отображения графика</h3>
+                    <p>График покажет динамику цен за выбранный период</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="data-section">
+            <div id="priceStats" class="stats-grid">
+                <!-- Статистика будет загружена здесь -->
+            </div>
+        </div>
     </div>
-</footer>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+    <script>
+        // Загрузка продуктов при выборе компании
+        document.getElementById('companySelect').addEventListener('change', function() {
+            const company = this.value;
+            const productSelect = document.getElementById('productSelect');
+            
+            if (company) {
+                fetch(`/api/products?company=${encodeURIComponent(company)}`)
+                    .then(response => response.json())
+                    .then(products => {
+                        productSelect.innerHTML = '<option value="">Выберите продукт</option>';
+                        products.forEach(product => {
+                            productSelect.innerHTML += `<option value="${product}">${product}</option>`;
+                        });
+                    });
+            } else {
+                productSelect.innerHTML = '<option value="">Сначала выберите компанию</option>';
+            }
+        });
+        
+        // Установка дат по умолчанию (последние 30 дней)
+        function setDefaultDates() {
+            const end = new Date();
+            const start = new Date();
+            start.setDate(start.getDate() - 30);
+            
+            document.getElementById('startDate').value = start.toISOString().split('T')[0];
+            document.getElementById('endDate').value = end.toISOString().split('T')[0];
+        }
+        
+        setDefaultDates();
+        
+        // Загрузка графика
+        function loadChart() {
+            const company = document.getElementById('companySelect').value;
+            const product = document.getElementById('productSelect').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            if (!company || !product) {
+                alert('Пожалуйста, выберите компанию и продукт');
+                return;
+            }
+            
+            const chartContainer = document.getElementById('priceChart');
+            chartContainer.innerHTML = '<div class="loading">Загрузка графика...</div>';
+            
+            // Загрузка данных для статистики
+            fetch(`/api/prices?company=${encodeURIComponent(company)}&product=${encodeURIComponent(product)}&start_date=${startDate}&end_date=${endDate}`)
+                .then(response => response.json())
+                .then(data => {
+                    updatePriceStats(data.stats);
+                });
+            
+            // Загрузка графика
+            fetch(`/api/chart?company=${encodeURIComponent(company)}&product=${encodeURIComponent(product)}&start_date=${startDate}&end_date=${endDate}`)
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(err.error); });
+                    }
+                    return response.json();
+                })
+                .then(chartData => {
+                    Plotly.newPlot('priceChart', chartData.data, chartData.layout, {responsive: true});
+                })
+                .catch(error => {
+                    chartContainer.innerHTML = `<div class="error">Ошибка: ${error.message}</div>`;
+                });
+        }
+        
+        // Обновление статистики цен
+        function updatePriceStats(stats) {
+            const statsContainer = document.getElementById('priceStats');
+            statsContainer.innerHTML = `
+                <div class="stat-item">
+                    <div class="stat-value">${stats.min.toFixed(2)}</div>
+                    <div class="stat-title">Минимальная цена (руб)</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${stats.max.toFixed(2)}</div>
+                    <div class="stat-title">Максимальная цена (руб)</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${stats.avg.toFixed(2)}</div>
+                    <div class="stat-title">Средняя цена (руб)</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${stats.last_price.toFixed(2)}</div>
+                    <div class="stat-title">Последняя цена (руб)</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${stats.count}</div>
+                    <div class="stat-title">Кол-во записей</div>
+                </div>
+            `;
+        }
+        
+        // Экспорт данных
+        function exportData() {
+            const company = document.getElementById('companySelect').value;
+            const product = document.getElementById('productSelect').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            let url = '/api/export?';
+            if (company) url += `company=${encodeURIComponent(company)}&`;
+            if (product) url += `product=${encodeURIComponent(product)}&`;
+            if (startDate) url += `start_date=${startDate}&`;
+            if (endDate) url += `end_date=${endDate}`;
+            
+            window.location.href = url;
+        }
+    </script>
 </body>
 </html>

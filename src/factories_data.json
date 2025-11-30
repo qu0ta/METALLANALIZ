@@ -1,0 +1,223 @@
+[
+  {
+    "url": "https://ibprom.ru/volgogradskiy-zavod-traktornyh-deta",
+    "name": "ОАО \"Волгоградский завод тракторных деталей и нормалей\"",
+    "address": "Адрес: 400005, Россия, Волгоградская обл., г. Волгоград, пр. Ленина, 59Тел./факс: +7 (8442) 23-13-81, 23-14-49, 23-33-59, 23-59-67, 23-13-81, 23-02-75Официальный сайт: http://www.vztdn.ru",
+    "phones": [],
+    "products": [
+      "Болты",
+      "Метизы",
+      "Детали тракторные"
+    ],
+    "status": "success"
+  },
+  {
+    "url": "https://ibprom.ru/belzan",
+    "name": "ОАО \"Белебеевский завод \"Автонормаль\"",
+    "address": "Адрес: 452005, Россия, Республика Башкортостан, г. Белебей, ул. Сыртлановой, 1а",
+    "phones": [],
+    "products": [
+      "Болты",
+      "Пружины",
+      "Прессовые изделия"
+    ],
+    "status": "success"
+  },
+  {
+    "url": "https://ibprom.ru/chelyabinskiy-kuznechno-pressovyy-z",
+    "name": "ОАО \"Челябинский кузнечно-прессовый завод\"",
+    "address": "Адрес: 454012, Россия, Челябинская обл., г. Челябинск, ул. Горелова, 12Тел./факс: +7 (351) 259-45-01, 259-46-01, 259-46-43, 259-46-85, 259-46-46, 259-70-96Официальный сайт: http://chkpz.ru",
+    "phones": [
+      "+7 (351) 259-45-01"
+    ],
+    "products": [
+      "Рессоры",
+      "Стальные изделия",
+      "Детали тракторные"
+    ],
+    "status": "success"
+  },
+  {
+    "url": "https://ibprom.ru/beloreckiy-zavod-pruzhin-i-ressor",
+    "name": "ЗАО \"Белорецкий завод рессор и пружин\"",
+    "address": "Адрес: 453500, Россия, Республика Башкортостан, г. Белорецк, ул. Маяковского, 104",
+    "phones": [],
+    "products": [
+      "Рессоры",
+      "Детали тракторные",
+      "Пружины"
+    ],
+    "status": "success"
+  },
+  {
+    "url": "https://ibprom.ru/66-metalloobrabatyvayuschiy-zavod",
+    "name": "66 Металлообрабатывающий завод",
+    "address": "Адрес: 125438, Россия, г. Москва, 4-й Лихачевский переулок, д. 2",
+    "phones": [
+      "+7 (495) 456-02-12",
+      "+7 (495) 456-02-06"
+    ],
+    "products": [
+      "Провода",
+      "Металлоконструкции"
+    ],
+    "status": "success"
+  },
+  {
+    "url": "https://ibprom.ru/lepse",
+    "name": "Лепсе",
+    "address": "Адрес: 141503, Россия, Московская обл., г. Солнечногорск, ул. Красная, дом 136",
+    "phones": [
+      "+7 (495) 994-09-95"
+    ],
+    "products": [
+      "Арматура",
+      "Сетки металлические"
+    ],
+    "status": "success"
+  },
+  {
+    "url": "https://ibprom.ru/zavod-selmash",
+    "name": "Завод Сельмаш",
+    "address": "Адрес: 610014, Россия, Кировская обл., г. Киров, ул. Щорса, д. 66",
+    "phones": [],
+    "products": [
+      "Корпуса"
+    ],
+    "status": "success"
+  },
+  {
+    "url": "https://ibprom.ru/liskimontazhkonstruktsiya",
+    "name": "Лискимонтажконструкция",
+    "address": "397907 Россия, Воронежская обл., г. Лиски, ул. Монтажников, 1",
+    "phones": [],
+    "products": [
+      "Металлоконструкции",
+      "Рессоры",
+      "Стальные изделия"
+    ],
+    "status": "success"
+  },
+  {
+    "url": "https://ibprom.ru/zavod-korpusov",
+    "name": "Завод корпусов",
+    "address": "607061, Россия, Нижегородская обл., г. Выкса, ул Заводская",
+    "phones": [],
+    "products": [
+      "Стальные изделия",
+      "Металлоконструкции",
+      "Корпуса"
+    ],
+    "status": "success"
+  },
+  {
+    "url": "https://ibprom.ru/chelyabinskiy-zavod-litoy-ostat",
+    "name": "Завод chelyabinskiy-zavod-litoy-ostat",
+    "address": "Не удалось загрузить данные",
+    "phones": [],
+    "products": [
+      "Металлопродукция"
+    ],
+    "status": "failed"
+  },
+  {
+    "url": "https://ibprom.ru/kamensk-uralskiy-zavod-po-obrabotke-tsvetnyh-metallov",
+    "name": "Завод kamensk-uralskiy-zavod-po-obrabotke-tsvetnyh-metallov",
+    "address": "Не удалось загрузить данные",
+    "phones": [],
+    "products": [
+      "Металлопродукция"
+    ],
+    "status": "failed"
+  },
+  {
+    "url": "https://ibprom.ru/kirovskiy-zavod-po-obrabotke-tsvetnyh-metallov",
+    "name": "Завод kirovskiy-zavod-po-obrabotke-tsvetnyh-metallov",
+    "address": "Не удалось загрузить данные",
+    "phones": [],
+    "products": [
+      "Металлопродукция"
+    ],
+    "status": "failed"
+  },
+  {
+    "url": "https://ibprom.ru/krasnoyarskiy-zavod-tsvetnyh-metallov",
+    "name": "Завод krasnoyarskiy-zavod-tsvetnyh-metallov",
+    "address": "Не удалось загрузить данные",
+    "phones": [],
+    "products": [
+      "Металлопродукция"
+    ],
+    "status": "failed"
+  },
+  {
+    "url": "https://ibprom.ru/litsey-tsvetnyh-metallov",
+    "name": "Завод litsey-tsvetnyh-metallov",
+    "address": "Не удалось загрузить данные",
+    "phones": [],
+    "products": [
+      "Металлопродукция"
+    ],
+    "status": "failed"
+  },
+  {
+    "url": "https://ibprom.ru/balashikhinskiy-metalloobrabatyvayuschiy-zavod",
+    "name": "Завод balashikhinskiy-metalloobrabatyvayuschiy-zavod",
+    "address": "Не удалось загрузить данные",
+    "phones": [],
+    "products": [
+      "Металлопродукция"
+    ],
+    "status": "failed"
+  },
+  {
+    "url": "https://ibprom.ru/vladimirskiy-zavod-metalloizdeliy",
+    "name": "Завод vladimirskiy-zavod-metalloizdeliy",
+    "address": "Не удалось загрузить данные",
+    "phones": [],
+    "products": [
+      "Металлопродукция"
+    ],
+    "status": "failed"
+  },
+  {
+    "url": "https://ibprom.ru/voronezhskiy-metalloobrabatyvayuschiy-zavod",
+    "name": "Завод voronezhskiy-metalloobrabatyvayuschiy-zavod",
+    "address": "Не удалось загрузить данные",
+    "phones": [],
+    "products": [
+      "Металлопродукция"
+    ],
+    "status": "failed"
+  },
+  {
+    "url": "https://ibprom.ru/ekaterinburgskiy-metalloobrabatyvayuschiy-zavod",
+    "name": "Завод ekaterinburgskiy-metalloobrabatyvayuschiy-zavod",
+    "address": "Не удалось загрузить данные",
+    "phones": [],
+    "products": [
+      "Металлопродукция"
+    ],
+    "status": "failed"
+  },
+  {
+    "url": "https://ibprom.ru/izhevskiy-metalloobrabatyvayuschiy-zavod",
+    "name": "Завод izhevskiy-metalloobrabatyvayuschiy-zavod",
+    "address": "Не удалось загрузить данные",
+    "phones": [],
+    "products": [
+      "Металлопродукция"
+    ],
+    "status": "failed"
+  },
+  {
+    "url": "https://ibprom.ru/kazan-metalloobrabatyvayuschiy-zavod",
+    "name": "Завод kazan-metalloobrabatyvayuschiy-zavod",
+    "address": "Не удалось загрузить данные",
+    "phones": [],
+    "products": [
+      "Металлопродукция"
+    ],
+    "status": "failed"
+  }
+]
